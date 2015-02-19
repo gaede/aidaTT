@@ -22,9 +22,9 @@ namespace aidaTT
      *
      * The choice for interfacing aidaTT to the outer world is the L3 parametrization, a particular perigee representation:
      *  [ Omega, tan(lambda), phi_0, d_0, z_0, ], e.g. explained in Alcaraz, L3 Internal Note 1666 (1995)
-     * A similar choice, but in a different order is given in a publicly accessible note:
-     *  Kraemer, Track parameters in LCIO [http://www-flc.desy.de/lcnotes/notes/LC-DET-2006-004.pdf]
      *
+     * The units for the parameters are described in the header file aidaTT-Units.hh. 
+     * The default length unit is meter.
      ***/
 
     /* TODO:

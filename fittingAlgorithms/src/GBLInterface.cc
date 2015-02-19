@@ -31,6 +31,8 @@ namespace aidaTT
 
         const std::vector<trajectoryElement*>& elements = TRAJ.trajectoryElements();
 
+        std::cout << " GBL::FIT there are " << elements.size() << " elements in the trajectory " << std::endl;
+        
         for(std::vector<trajectoryElement*>::const_iterator element = elements.begin(), last = elements.end(); element < last; ++element)
             {
                 const fiveByFiveMatrix& jac = (*element)->jacobian();
@@ -97,6 +99,8 @@ namespace aidaTT
 
                 // store the point in the list that will be handed to the trajectory
                 theListOfPoints.push_back(point);
+                
+                std::cout << " !!! label of point is " << point.getLabel() <<  std::endl;
             }
         /// TODO :: check validity before continuing!
 
@@ -131,9 +135,18 @@ namespace aidaTT
 
         //~ get the results at a given label in local cl track parameters
         //~ the track parameters are corrections to the curvilinear track parameters
-        _trajectory->getResults(0, tpCorr, trackcovariance);
+        _trajectory->getResults(1, tpCorr, trackcovariance);
 
         Vector5 clCorrections(tpCorr[0], tpCorr[1], tpCorr[2], tpCorr[3], tpCorr[4]);
+        
+        std::cout << " T H E C O R R E C T I O N S: " << clCorrections << std::endl;
+
+        _trajectory->getResults(6, tpCorr, trackcovariance);
+
+        Vector5 clCorrections2(tpCorr[0], tpCorr[1], tpCorr[2], tpCorr[3], tpCorr[4]);
+        
+        std::cout << " T H E C O R R E C T I O N S at different point: " << clCorrections2 << std::endl;
+
 
         fiveByFiveMatrix cl2L3Jacobian  = curvilinearToL3Jacobian(TRAJ.getInitialTrackParameters(), Vector3D(0., 0., TRAJ.Bz())) ;
         Vector5 L3corrections           =  cl2L3Jacobian * clCorrections;

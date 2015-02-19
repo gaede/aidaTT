@@ -20,44 +20,43 @@ namespace aidaTT
     {
         trackParameters TP;
         /// track state can be read as L3 parametrization:  [ Omega, tan(lambda), phi_0, d_0, z_0, ]
+        /// LCIO units are in millimeter -- change to meter
+        const double convertMillimeterToMeter = 1./1000.;
+        const double convertInverseMillimeterToMeter = 1000.;
+        
         Vector5 param;
-        param(OMEGA) = ts->getOmega() / dd4hep::mm;
+        param(OMEGA) = ts->getOmega() * convertInverseMillimeterToMeter;
         param(TANL)  = ts->getTanLambda();
         param(PHI0)  = ts->getPhi();
-        param(D0)    = ts->getD0() * dd4hep::mm;
-        param(Z0)    = ts->getZ0() * dd4hep::mm;
-
-        //debug: vary the track parameters by 1% :
-        // Vector5 param( 1.01 * ts->getOmega()/dd4hep::mm,
-        //         1.01 * ts->getTanLambda(),
-        //         0.99 * ts->getPhi(),
-        //         0.99 * ts->getD0()*dd4hep::mm,
-        //         1.01  * ts->getZ0()*dd4hep::mm);
+        param(D0)    = ts->getD0() * convertMillimeterToMeter; 
+        param(Z0)    = ts->getZ0() * convertMillimeterToMeter;
 
         /// get the reference point
-        Vector3D refPoint(ts->getReferencePoint()[0]*dd4hep::mm , ts->getReferencePoint()[1]*dd4hep::mm , ts->getReferencePoint()[2]*dd4hep::mm);
+        Vector3D refPoint(ts->getReferencePoint()[0] * convertMillimeterToMeter,
+                          ts->getReferencePoint()[1] * convertMillimeterToMeter,
+                          ts->getReferencePoint()[2] * convertMillimeterToMeter);
 
         /// the covariance matrix is stored as lower triangle,
         ///  order of parameters is: d0, phi, omega, z0, tan(lambda)
         fullCovariance covarianceMatrix;
 
         // omega, omega - 0,0
-        covarianceMatrix(0, 0) = ts->getCovMatrix().at(5) / (dd4hep::mm * dd4hep::mm);
+        covarianceMatrix(0, 0) = ts->getCovMatrix().at(5)  * convertInverseMillimeterToMeter * convertInverseMillimeterToMeter;
         // tanLambda,tanLambda (1,1)
         covarianceMatrix(1, 1) = ts->getCovMatrix().at(14);
         // phi,phi (2,2)
         covarianceMatrix(2, 2) = ts->getCovMatrix().at(2);
         // d0,d0 (3,3)
-        covarianceMatrix(3, 3) = ts->getCovMatrix().at(0) * dd4hep::mm * dd4hep::mm;
+        covarianceMatrix(3, 3) = ts->getCovMatrix().at(0)  * convertMillimeterToMeter * convertMillimeterToMeter;
         // z0,z0 (4,4)
-        covarianceMatrix(4, 4) = ts->getCovMatrix().at(9) * dd4hep::mm * dd4hep::mm;
+        covarianceMatrix(4, 4) = ts->getCovMatrix().at(9)  * convertMillimeterToMeter * convertMillimeterToMeter;
 
         // omega, tanLambda (0,1) - (1,0)
-        covarianceMatrix(1, 0) = ts->getCovMatrix().at(12) / dd4hep::mm;
-        covarianceMatrix(0, 1) = ts->getCovMatrix().at(12) / dd4hep::mm;
+        covarianceMatrix(1, 0) = ts->getCovMatrix().at(12)  * convertInverseMillimeterToMeter;
+        covarianceMatrix(0, 1) = ts->getCovMatrix().at(12)  * convertInverseMillimeterToMeter;
         // omega, phi (0,2) - (2,0)
-        covarianceMatrix(2, 0) = ts->getCovMatrix().at(4) / dd4hep::mm;
-        covarianceMatrix(0, 2) = ts->getCovMatrix().at(4) / dd4hep::mm;
+        covarianceMatrix(2, 0) = ts->getCovMatrix().at(4)  * convertInverseMillimeterToMeter;
+        covarianceMatrix(0, 2) = ts->getCovMatrix().at(4)  * convertInverseMillimeterToMeter;
         //omega, d0 (0,3) - (3,0)
         covarianceMatrix(3, 0) = ts->getCovMatrix().at(3);
         covarianceMatrix(0, 3) = ts->getCovMatrix().at(3);
@@ -69,22 +68,22 @@ namespace aidaTT
         covarianceMatrix(1, 2) = ts->getCovMatrix().at(11);
         covarianceMatrix(2, 1) = ts->getCovMatrix().at(11);
         // tanLambda, d0 (1,3) - (3,1)
-        covarianceMatrix(1, 3) = ts->getCovMatrix().at(10) * dd4hep::mm;
-        covarianceMatrix(3, 1) = ts->getCovMatrix().at(10) * dd4hep::mm;
+        covarianceMatrix(1, 3) = ts->getCovMatrix().at(10)  * convertMillimeterToMeter;
+        covarianceMatrix(3, 1) = ts->getCovMatrix().at(10)  * convertMillimeterToMeter;
         // tanLambda, z0 (1,4) - (4,1)
-        covarianceMatrix(1, 4) = ts->getCovMatrix().at(13) * dd4hep::mm;
-        covarianceMatrix(4, 1) = ts->getCovMatrix().at(13) * dd4hep::mm;
+        covarianceMatrix(1, 4) = ts->getCovMatrix().at(13)  * convertMillimeterToMeter;
+        covarianceMatrix(4, 1) = ts->getCovMatrix().at(13)  * convertMillimeterToMeter;
 
         // phi, d0 (2,3) - (3,2)
-        covarianceMatrix(3, 2) = ts->getCovMatrix().at(1) * dd4hep::mm;
-        covarianceMatrix(2, 3) = ts->getCovMatrix().at(1) * dd4hep::mm;
+        covarianceMatrix(3, 2) = ts->getCovMatrix().at(1)  * convertMillimeterToMeter;
+        covarianceMatrix(2, 3) = ts->getCovMatrix().at(1)  * convertMillimeterToMeter;
         // phi, z0 (2,4) - (4,2)
-        covarianceMatrix(2, 4) = ts->getCovMatrix().at(7) * dd4hep::mm;
-        covarianceMatrix(4, 2) = ts->getCovMatrix().at(7) * dd4hep::mm;
+        covarianceMatrix(2, 4) = ts->getCovMatrix().at(7)  * convertMillimeterToMeter;
+        covarianceMatrix(4, 2) = ts->getCovMatrix().at(7)  * convertMillimeterToMeter;
 
         // d0, z0 (3,4) - (4,3)
-        covarianceMatrix(3, 4) = ts->getCovMatrix().at(6) * dd4hep::mm * dd4hep::mm;
-        covarianceMatrix(4, 3) = ts->getCovMatrix().at(6) * dd4hep::mm * dd4hep::mm;
+        covarianceMatrix(3, 4) = ts->getCovMatrix().at(6) * convertMillimeterToMeter * convertMillimeterToMeter;
+        covarianceMatrix(4, 3) = ts->getCovMatrix().at(6) * convertMillimeterToMeter * convertMillimeterToMeter;
 
         TP.setTrackParameters(param, covarianceMatrix, refPoint);
         return  TP;
@@ -97,6 +96,10 @@ namespace aidaTT
         Vector5 param = tp.parameters();
         Vector3D refPoint = tp.referencePoint();
         fullCovariance covarianceMatrix = tp.covarianceMatrix();
+        
+        /// LCIO units are in millimeter -- change from meter
+        const double convertMeterToMillimeter = 1000.;
+        const double convertInverseMeterToMillimeter = 1./1000.;
 
         IMPL::TrackStateImpl* tsi = new IMPL::TrackStateImpl();
         /// sets location -- yet undefined
@@ -112,40 +115,42 @@ namespace aidaTT
         std::vector<float> covm;
 
         // d0,d0 (3,3)
-        covm.push_back(covarianceMatrix(3, 3) / (dd4hep::mm * dd4hep::mm)) ;   // ts->getCovMatrix().at(0);
+        covm.push_back(covarianceMatrix(3, 3) * convertMeterToMillimeter  * convertMeterToMillimeter) ;   // ts->getCovMatrix().at(0);
         // phi, d0 (2,3) - (3,2)
-        covm.push_back(covarianceMatrix(3, 2) / dd4hep::mm);  // ts->getCovMatrix().at(1);
+        covm.push_back(covarianceMatrix(3, 2)  * convertMeterToMillimeter);  // ts->getCovMatrix().at(1);
         // phi,phi (2,2)
         covm.push_back(covarianceMatrix(2, 2));  // ts->getCovMatrix().at(2);
         //omega, d0 (0,3) - (3,0)
         covm.push_back(covarianceMatrix(3, 0));  // ts->getCovMatrix().at(3);
         // omega, phi (0,2) - (2,0)
-        covm.push_back(covarianceMatrix(0, 2) * dd4hep::mm);  // ts->getCovMatrix().at(4);
+        covm.push_back(covarianceMatrix(0, 2) * convertInverseMeterToMillimeter);  // ts->getCovMatrix().at(4);
         // omega, omega - 0,0
-        covm.push_back(covarianceMatrix(0, 0) * (dd4hep::mm * dd4hep::mm));  // ts->getCovMatrix().at(5);
+        covm.push_back(covarianceMatrix(0, 0) * convertInverseMeterToMillimeter * convertInverseMeterToMillimeter);  // ts->getCovMatrix().at(5);
         // d0, z0 (3,4) - (4,3)
-        covm.push_back(covarianceMatrix(3, 4) / (dd4hep::mm * dd4hep::mm));  // ts->getCovMatrix().at(6);
+        covm.push_back(covarianceMatrix(3, 4) * convertMeterToMillimeter * convertMeterToMillimeter);  // ts->getCovMatrix().at(6);
         // phi, z0 (2,4) - (4,2)
-        covm.push_back(covarianceMatrix(2, 4) / dd4hep::mm);  // ts->getCovMatrix().at(7);
+        covm.push_back(covarianceMatrix(2, 4) * convertMeterToMillimeter);  // ts->getCovMatrix().at(7);
         // omega, z0 (0,4) - (4,0)
         covm.push_back(covarianceMatrix(4, 0));  // ts->getCovMatrix().at(8);
         // z0,z0 (4,4)
-        covm.push_back(covarianceMatrix(4, 4) / (dd4hep::mm * dd4hep::mm));  // ts->getCovMatrix().at(9);
+        covm.push_back(covarianceMatrix(4, 4)  * convertMeterToMillimeter * convertMeterToMillimeter);  // ts->getCovMatrix().at(9);
         // tanLambda, d0 (1,3) - (3,1)
-        covm.push_back(covarianceMatrix(1, 3) / dd4hep::mm);  // ts->getCovMatrix().at(10);
+        covm.push_back(covarianceMatrix(1, 3) * convertMeterToMillimeter);  // ts->getCovMatrix().at(10);
         // tanLambda, phi (1,2) - (2,1)
         covm.push_back(covarianceMatrix(1, 2));  // ts->getCovMatrix().at(11);
         // omega, tanLambda (0,1) - (1,0)
-        covm.push_back(covarianceMatrix(0, 1) * dd4hep::mm);  // ts->getCovMatrix().at(12);
+        covm.push_back(covarianceMatrix(0, 1) * convertInverseMeterToMillimeter);  // ts->getCovMatrix().at(12);
         // tanLambda, z0 (1,4) - (4,1)
-        covm.push_back(covarianceMatrix(1, 4) / dd4hep::mm);  // ts->getCovMatrix().at(13);
+        covm.push_back(covarianceMatrix(1, 4)  * convertMeterToMillimeter);  // ts->getCovMatrix().at(13);
         // tanLambda,tanLambda (1,1)
         covm.push_back(covarianceMatrix(1, 1));  // ts->getCovMatrix().at(14);
 
         tsi->setCovMatrix(covm);
 
         /// set reference point
-        float rp[3] = { refPoint.x() / dd4hep::mm, refPoint.y() / dd4hep::mm, refPoint.z() / dd4hep::mm};
+        float rp[3] = { refPoint.x() * convertMeterToMillimeter,
+                         refPoint.y() * convertMeterToMillimeter,
+                         refPoint.z() * convertMeterToMillimeter };
         tsi->setReferencePoint(rp);
 
         return tsi;

@@ -296,7 +296,7 @@ int main(int argc, char** argv)
 		    double resU = tU - U ;
 		    double resV = tV - V ;
 		    
-		    std::cout << " ########## I found the intersection in tU, TV "  << tU << ", "  << tV << " while hit position is at " << U << ", " << V <<  std::endl ;
+		    //std::cout << " ########## I found the intersection in tU, TV "  << tU << ", "  << tV << " while hit position is at " << U << ", " << V <<  std::endl ;
 
 		    
 		    if( BitSet32( testhit3->getType() )[ UTIL::ILDTrkHitTypeBit::COMPOSITE_SPACEPOINT ]   ){ //it is a composite spacepoint
@@ -317,7 +317,7 @@ int main(int argc, char** argv)
 
 			pullLCIO_U.push_back(resU/deltaU);
 
-			std::cout << " 1-dim hit uncertainty in U " << deltaU << std::endl ;
+			//std::cout << " 1-dim hit uncertainty in U " << deltaU << std::endl ;
 
 		      }
 
@@ -333,7 +333,7 @@ int main(int argc, char** argv)
 			double deltaU = planarhit3->getdU() * dd4hep::mm  ;
 			double deltaV = planarhit3->getdV() * dd4hep::mm  ;
 			
-			std::cout << " AND THE PLANARHIT EXISTS!?!?! dU, dV " << deltaU << ", " << deltaV << std::endl ;
+			//~ std::cout << " AND THE PLANARHIT EXISTS!?!?! dU, dV " << deltaU << ", " << deltaV << std::endl ;
 			
 			pullLCIO_U.push_back(resU/deltaU);
 			pullLCIO_V.push_back(resV/deltaV);
@@ -349,7 +349,10 @@ int main(int argc, char** argv)
 
 
 	      //aidaTT::trajectory fitTrajectory(iTP, fitter, bfield, propagation, &geom);
-	      
+
+          //~ Vector3D atIP(0.,0.,0.);
+          //~ fitTrajectory.addElement(atIP);
+          
 	      for(std::vector<TrackerHit*>::iterator thit = initialHits.begin(), endIter = initialHits.end(); thit < endIter; ++thit)
                 {
 		  long64 hitid = (*thit)->getCellID0() ;
@@ -473,7 +476,7 @@ int main(int argc, char** argv)
 		  pullU.push_back(resU/deltaU);
 		  pullV.push_back(resV/deltaV);
 
-		  std::cout << " res in U = " << resU << " res in V = " << resV << std::endl ;
+		  //std::cout << " res in U = " << resU << " res in V = " << resV << std::endl ;
 
 		  TrackHitResidualsU.push_back(resU*10000.0);
 		  TrackHitResidualsV.push_back(resV*10000.0);
@@ -490,10 +493,10 @@ int main(int argc, char** argv)
 
 	      //***********************************************************************************************************
 
-	      std::cout << " loop " << n << std::endl ;
-	      std::cout << " refitted values " << std::endl;
-	      std::cout << result->estimatedParameters() << std::endl;
-	      
+	      //~ std::cout << " loop " << n << std::endl ;
+	      //~ std::cout << " refitted values " << std::endl;
+	      //~ std::cout << result->estimatedParameters() << std::endl;
+	      //~ 
 	      //iTP = result->estimatedParameters();  // valid only when we make an iterative fitting
 	      
 
@@ -508,11 +511,11 @@ int main(int argc, char** argv)
 	         
 
 
-	    std::cout << " initial values " << std::endl;
-	    std::cout << iTP << std::endl;
-	    std::cout << " refitted values " << std::endl;
-	    std::cout << result->estimatedParameters() << std::endl;
-	    
+	    //~ std::cout << " initial values " << std::endl;
+	    //~ std::cout << iTP << std::endl;
+	    //~ std::cout << " refitted values " << std::endl;
+	    //~ std::cout << result->estimatedParameters() << std::endl;
+	    //~ 
 	    // add Track State to track:
 	    ts = aidaTT::createLCIO( result->estimatedParameters() );
 	    //ts = aidaTT::createLCIO( iTP );  // only to check the initial helix

@@ -12,27 +12,23 @@ namespace aidaTT
          * Adapted from TRPRFN.F (GEANT3) by Claus Kleinwort (DESY)
          * for curvilinear track parameters (q/p,lambda,phi,x_t,y_t).
          * \param [in] reference to (5*5) propagation matrix -- the computed object
-         * \param [in] dw   (3D) arc length to end point
-         * \param [in] qop q/p (signed inverse momentum)
+         * \param [in] dw (3D) arc length to end point in meter
+         * \param [in] qop q/p (signed inverse momentum) in 1./meter
          * \param [in] tStart  track direction at start point
          * \param [in] tEnd   track direction at end point
-         * \param [in] bfield   B*c (magnetic field *c)
+         * \param [in] bfield B*c (magnetic field *c) , B in Tesla, c in meter/second
          * \return bool for success
          */
 
-        // TODO: explain WHY the conversion factor is needed -> see paper
-        const double qp = -bfield.r() * convertBr2P_cm ; // -|B*c|
+        const double qp = -bfield.r(); // -|B*c|
         const double q = qp * qop; // Q
-        if(q == 0.)
+        if(q == 0.) // no magnetic field: straight line propagation
             {
-                // line
                 jac(3, 2) = dw * sqrt(tStart[0] * tStart[0] + tStart[1] * tStart[1]);
-                ;
                 jac(4, 1) = dw;
             }
-        else
+        else // with magnetic field  -- helix!
             {
-                // helix
                 // at start
                 const double coslambdaStart = sqrt(tStart[0] * tStart[0] + tStart[1] * tStart[1]);
                 // at end
@@ -78,6 +74,7 @@ namespace aidaTT
                 const double tEndu1 = tEnd.dot(u1), tEndv1 = tEnd.dot(v1);
                 const double tEnddx = tEnd.dot(dx), u2dx = u2.dot(dx), v2dx = v2.dot(dx);
                 const double an2u1 = an2.dot(u1), an2v1 = an2.dot(v1);
+ 
                 // jacobian
                 // 1/P
                 jac(0, 0) = 1.;
@@ -109,6 +106,7 @@ namespace aidaTT
                 jac(4, 3) = u1v2;
                 jac(4, 4) = v1v2;
             }
+
         return true;
     }
 }

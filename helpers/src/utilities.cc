@@ -9,7 +9,7 @@ namespace aidaTT
     double calculateQoverP(const trackParameters& tp, double bfield)
     {
         if(bfield != 0.)
-            return (- cos(calculateLambda(tp)) * calculateCurvature(tp) / (bfield * convertBr2P_cm));
+            return (- cos(calculateLambda(tp)) * calculateCurvature(tp) / bfield );
         else
             return 0.;
     }
@@ -221,11 +221,9 @@ namespace aidaTT
         jacobian.Unit();
 
         // differences to unit matrix:
+        const double Q    = - qop * bfield.r() * 0.3; 
+        const double qbar =   qop * bfield.z();
 
-        /// TODO: more comments on the conversion of the actual "B" field values
-        /// actually (!) they are defined WITH the conversion to 1/R already /intended/
-        const double Q    = - qop * bfield.r() * convertBr2P_cm ; // -B*c*q/p
-        const double qbar =   qop * bfield.z() * convertBr2P_cm;
         jacobian(0, 0) = - bfield.z() * convertBr2P_cm / cosLambda;
         jacobian(0, 1) = -qbar * tanLambda / cosLambda;
         jacobian(0, 3) = qbar * Q * tanLambda * ui * anv / cosLambda / ti;
