@@ -9,32 +9,33 @@ namespace aidaTT
     double calculateQoverP(const trackParameters& tp, double bfield)
     {
         if(bfield != 0.)
-            return (- cos(calculateLambda(tp)) * calculateCurvature(tp) / bfield );
+            return (- cos(calculateLambda(tp)) * calculateCurvature(tp) / bfield);
         else
             return 0.;
     }
 
-    Vector3D pointOnTrajectory(const trackParameters& tp,  double s) {
+    Vector3D pointOnTrajectory(const trackParameters& tp,  double s)
+    {
 
-      Vector3D p ;
-      const Vector3D& rp = tp.referencePoint() ;
+        Vector3D p ;
+        const Vector3D& rp = tp.referencePoint() ;
 
-      double omega = tp.parameters()( OMEGA ) ;  
-      double phi0  = tp.parameters()( PHI0  ) ;
-      double tanl  = tp.parameters()( TANL  ) ;
-      double d0    = tp.parameters()( D0    ) ;
-      double z0    = tp.parameters()( Z0    ) ;
+        double omega = tp.parameters()(OMEGA) ;
+        double phi0  = tp.parameters()(PHI0) ;
+        double tanl  = tp.parameters()(TANL) ;
+        double d0    = tp.parameters()(D0) ;
+        double z0    = tp.parameters()(Z0) ;
 
-      double sinphi = sin( phi0 ) ;
-      double cosphi = cos( phi0 ) ;
+        double sinphi = sin(phi0) ;
+        double cosphi = cos(phi0) ;
 
-      p.x() = rp.x() - d0 * sinphi + (1./omega) * ( sinphi - sin( phi0 - s * omega ) ) ;
-      
-      p.y() = rp.y() + d0 * cosphi - (1./omega) * ( cosphi - cos( phi0 - s * omega ) ) ;
-	  
-      p.z() = rp.z() + z0 + s * tanl ;
-	  
-      return  p ;
+        p.x() = rp.x() - d0 * sinphi + (1. / omega) * (sinphi - sin(phi0 - s * omega)) ;
+
+        p.y() = rp.y() + d0 * cosphi - (1. / omega) * (cosphi - cos(phi0 - s * omega)) ;
+
+        p.z() = rp.z() + z0 + s * tanl ;
+
+        return  p ;
     }
 
 
@@ -221,10 +222,10 @@ namespace aidaTT
         jacobian.Unit();
 
         // differences to unit matrix:
-        const double Q    = - qop * bfield.r() * 0.3; 
+        const double Q    = - qop * bfield.r() * 0.3;
         const double qbar =   qop * bfield.z();
 
-        jacobian(0, 0) = - bfield.z() * convertBr2P_cm / cosLambda;
+        jacobian(0, 0) = - bfield.z() / cosLambda;
         jacobian(0, 1) = -qbar * tanLambda / cosLambda;
         jacobian(0, 3) = qbar * Q * tanLambda * ui * anv / cosLambda / ti;
         jacobian(0, 4) = qbar * Q * tanLambda * vi * anv / cosLambda / ti;
@@ -378,25 +379,4 @@ namespace aidaTT
         // and return the product
         return p2L3 * cl2p;
     }
-
-
-    /* not needed ???
-        /// Calculate transformation matrix from L3 track parametrization to curvilinear parametrization
-        /// -- this joins the two transformations from L3 to perigee and then perigee to curvilinear
-        /// \param [return] 5x5 matrix -- the transformation
-        /// \param [input] trackParameters -- the reference parameters, at/towards which the corrections are to be applied
-        /// \param [input] Vector5 L3 parameter corrections
-        /// \param [input] Vector3D BField -- needed to evaluate expressions
-        fiveByFiveMatrix L3ToCurvilinearJacobian(const trackParameters& tP, const Vector3D& bfield)
-        {
-            // first move from L3 to perigee
-            fiveByFiveMatrix l32p = L3ToPerigeeJacobian(tP);
-
-            // now calculate the second transformation matrix
-            fiveByFiveMatrix p2cl = perigeeToCurvilinearJacobian(tP, bfield);
-
-            // return the full product
-            return p2cl * l32p;
-        }
-        */
 }

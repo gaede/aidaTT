@@ -7,7 +7,7 @@ namespace aidaTT
     /// the measurement directions, resolution and residuals plus the local curvilinear system and some identification
     trajectoryElement::trajectoryElement(double arclength, const ISurface& surface, std::vector<Vector3D>* measDir, const std::vector<double>& precisions,
                                          const std::vector<double>& residuals, std::pair<Vector3D, Vector3D>* lCLS, void* id)
-        : _arclength(arclength), _jacobianFromPrevious(NULL), _surface(&surface), _measurement(_surface->type().isSensitive()),
+        : _arclength(arclength), _jacobianFromPrevious(NULL), _surface(&surface), _measurement(_surface->isSensitive()),
           _measDirections(measDir), _precisions(precisions), _residuals(residuals), _localCurvilinearSystem(lCLS),  _id(id)
     {
         _calculateLocalToMeasurementProjectionMatrix();

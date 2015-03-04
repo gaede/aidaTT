@@ -84,11 +84,8 @@ int main(int argc, char** argv)
                             long64 id = sHit->getCellID0() ;
 
                             idDecoder.setValue(id) ;
-                            //      std::cout << " simhit with cellid : " << idDecoder << std::endl ;
 
-                            const aidaTT::ISurface* surf = surfMap[ id ] ;
-
-                            std::cout << " surface " << (*surf) << " found for id : " << std::hex << id << std::dec  ;
+//                            const aidaTT::ISurface* surf = surfMap[ id ] ;
                         }
 
 

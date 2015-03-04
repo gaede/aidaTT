@@ -53,8 +53,9 @@ namespace aidaTT
     }
 
 
-    Vector3D trajectory::pointAt( double s) {
-        return pointOnTrajectory( _referenceParameters, s ) ;
+    Vector3D trajectory::pointAt(double s)
+    {
+        return pointOnTrajectory(_referenceParameters, s) ;
     }
 
     const std::vector<trajectoryElement*>& trajectory::trajectoryElements() const
@@ -96,11 +97,11 @@ namespace aidaTT
     bool trajectory::_calculateIntersectionWithSurface(const ISurface* surf, double& s, Vector2D* localUV, Vector3D* xx)
     {
         /// currently three different types of surfaces are available
-        if(surf->type().isZCylinder())
+        if(surf->isZCylinder())
             return _intersectsWithinZCylinderBounds(surf, s, localUV, xx);
-        else if(surf->type().isZPlane())
+        else if(surf->isZPlane())
             return _intersectWithinZPlaneBounds(surf, s, localUV, xx);
-        else if(surf->type().isZDisk())
+        else if(surf->isZDisk())
             return _intersectWithinZDiskBounds(surf, s, localUV, xx);
         else
             throw std::invalid_argument("[aidaTT::trajectory::getIntersectionWithSurfaces] Unknown surface type!");
@@ -110,158 +111,159 @@ namespace aidaTT
 
     bool trajectory::_intersectsWithinZCylinderBounds(const ISurface* surf, double& s, Vector2D* localUV, Vector3D* xx)
     {
-      //// see: L3 internal note 1666 "Helicoidal tracks", J.Alcaraz
+        //// see: L3 internal note 1666 "Helicoidal tracks", J.Alcaraz
 
-      if( ! surf->type().isParallelToZ() ){
+        if(! surf->isParallelToZ())
+            {
 
-	throw std::runtime_error( " **** _intersectsWithinZCylinderBounds: only works for xylinders parallel to the z-axis " ) ;
-      }
+                throw std::runtime_error(" **** _intersectsWithinZCylinderBounds: only works for xylinders parallel to the z-axis ") ;
+            }
 
-      const double omega = calculateOmega( _referenceParameters);
-      const double phi0  = calculatePhi0(  _referenceParameters);
-      const double d0    = calculateD0(    _referenceParameters);
+        const double omega = calculateOmega(_referenceParameters);
+        const double phi0  = calculatePhi0(_referenceParameters);
+        const double d0    = calculateD0(_referenceParameters);
 
-      const double sinph = sin( phi0 ) ;
-      const double cosph = cos( phi0 ) ;
+        const double sinph = sin(phi0) ;
+        const double cosph = cos(phi0) ;
 
-      const Vector3D& rp =  _referenceParameters.referencePoint() ;
-      const double x0    = rp.x() - d0 * sinph ;
-      const double y0    = rp.y() + d0 * cosph ;
-      
-      const double rho = dynamic_cast<const ICylinder*>(surf)->radius() ;
+        const Vector3D& rp =  _referenceParameters.referencePoint() ;
+        const double x0    = rp.x() - d0 * sinph ;
+        const double y0    = rp.y() + d0 * cosph ;
 
-      const Vector3D&  cylc = dynamic_cast<const ICylinder*>(surf)->center() ;
-      const double xrho = cylc.x()  ;
-      const double yrho = cylc.y()  ;
+        const double rho = dynamic_cast<const ICylinder*>(surf)->radius() ;
 
-      //--------
+        const Vector3D&  cylc = dynamic_cast<const ICylinder*>(surf)->center() ;
+        const double xrho = cylc.x()  ;
+        const double yrho = cylc.y()  ;
 
-
-      const double dx = xrho - x0 ;
-      const double dy = yrho - y0 ;
-
-      double sox = sinph - omega * dx  ;
-      double coy = cosph + omega * dy ;
-      
-      double gamma = ( 2*dx * sinph - 2 * dy * cosph - omega * rho * rho  - omega * ( dx*dx + dy*dy ) ) ;
-      gamma /= ( 2 * rho * sqrt( sox * sox + coy * coy) ) ;
-
-      if( std::fabs( gamma ) > 1. )  // no solution  ( could have faster check at beginning  ...  ) 
-	return false ;
-
-      const double phirho = atan2( sox , coy ) ;
-
-      const double asing = asin( gamma ) ;
-
-      const double phic0 = asing + phirho ;
-
-      double phic1 = ( asing  > 0. ?  M_PI - asing :  - M_PI - asing  ) ;
-      phic1 += phirho ;
-
-      const double X0 = xrho + rho * cos( phic0 )  ;
-      const double Y0 = yrho + rho * sin( phic0 )  ;
-
-      const double X1 = xrho + rho * cos( phic1 )  ;
-      const double Y1 = yrho + rho * sin( phic1 )  ;
-      
-      const double S0 = calculateSfromXY( std::make_pair( X0 , Y0 ) , _referenceParameters);
-      const double S1 = calculateSfromXY( std::make_pair( X1 , Y1 ) , _referenceParameters);
-
-      const double Z0 = calculateZfromS(S0, _referenceParameters);
-      const double Z1 = calculateZfromS(S1, _referenceParameters);
-
-      Vector3D sol0(X0, Y0, Z0);
-      Vector3D sol1(X1, Y1, Z1);
-
-      const bool insideFirst  = surf->insideBounds(sol0);
-      const bool insideSecond = surf->insideBounds(sol1);
+        //--------
 
 
-      // std::cout << " trajectory::_intersectsWithinZCylinderBounds:  sol0 x = " 
-      // 		<< X0 << " y = " << Y0 << " z = " << Z0 << " s = " << S0 << " isInside " << insideFirst << std::endl ;
+        const double dx = xrho - x0 ;
+        const double dy = yrho - y0 ;
 
-      // std::cout << " trajectory::_intersectsWithinZCylinderBounds:  sol1 x = " 
-      // 		<< X1 << " y = " << Y1 << " z = " << Z1 << " s = " << S1 << " isInside " << insideSecond << std::endl ;
+        double sox = sinph - omega * dx  ;
+        double coy = cosph + omega * dy ;
+
+        double gamma = (2 * dx * sinph - 2 * dy * cosph - omega * rho * rho  - omega * (dx * dx + dy * dy)) ;
+        gamma /= (2 * rho * sqrt(sox * sox + coy * coy)) ;
+
+        if(std::fabs(gamma) > 1.)      // no solution  ( could have faster check at beginning  ...  )
+            return false ;
+
+        const double phirho = atan2(sox , coy) ;
+
+        const double asing = asin(gamma) ;
+
+        const double phic0 = asing + phirho ;
+
+        double phic1 = (asing  > 0. ?  M_PI - asing :  - M_PI - asing) ;
+        phic1 += phirho ;
+
+        const double X0 = xrho + rho * cos(phic0)  ;
+        const double Y0 = yrho + rho * sin(phic0)  ;
+
+        const double X1 = xrho + rho * cos(phic1)  ;
+        const double Y1 = yrho + rho * sin(phic1)  ;
+
+        const double S0 = calculateSfromXY(std::make_pair(X0 , Y0) , _referenceParameters);
+        const double S1 = calculateSfromXY(std::make_pair(X1 , Y1) , _referenceParameters);
+
+        const double Z0 = calculateZfromS(S0, _referenceParameters);
+        const double Z1 = calculateZfromS(S1, _referenceParameters);
+
+        Vector3D sol0(X0, Y0, Z0);
+        Vector3D sol1(X1, Y1, Z1);
+
+        const bool insideFirst  = surf->insideBounds(sol0);
+        const bool insideSecond = surf->insideBounds(sol1);
 
 
-      if((!insideFirst && !insideSecond))   // || (S0 < 0. && S1 < 0.))      //do not  discard negative or no solution
-	return false;
+        // std::cout << " trajectory::_intersectsWithinZCylinderBounds:  sol0 x = "
+        //        << X0 << " y = " << Y0 << " z = " << Z0 << " s = " << S0 << " isInside " << insideFirst << std::endl ;
+
+        // std::cout << " trajectory::_intersectsWithinZCylinderBounds:  sol1 x = "
+        //        << X1 << " y = " << Y1 << " z = " << Z1 << " s = " << S1 << " isInside " << insideSecond << std::endl ;
+
+
+        if((!insideFirst && !insideSecond))   // || (S0 < 0. && S1 < 0.))      //do not  discard negative or no solution
+            return false;
 
 
 #if 1 // fg: change the logic for cylinders: always only return the closest solution 
-      // to have same behaviour as KalTest
-      // FIXME: ideally the interscetion methods should return all solutions and have the 
-      //        calling program decide which to use ...
+        // to have same behaviour as KalTest
+        // FIXME: ideally the interscetion methods should return all solutions and have the
+        //        calling program decide which to use ...
 
-      Vector3D& theSol = sol0 ;
-      bool isInside = insideFirst ;
+        Vector3D& theSol = sol0 ;
+        bool isInside = insideFirst ;
 
-      if(std::fabs(S0)  < std::fabs(S1))
-	{
-	  s = S0;
-	  if(localUV != NULL)
-	    _calculateLocalCoordinates(surf, sol0, localUV);
-	  
-	  if(xx) xx->fill(sol0) ;
+        if(std::fabs(S0)  < std::fabs(S1))
+            {
+                s = S0;
+                if(localUV != NULL)
+                    _calculateLocalCoordinates(surf, sol0, localUV);
 
-	}
-      else
-	{
-	  s = S1;
-	  if(localUV != NULL)
-	    _calculateLocalCoordinates(surf, sol1, localUV);
-	  
-	  if(xx) xx->fill(sol1) ;
+                if(xx) xx->fill(sol0) ;
 
-	  theSol = sol1 ;
-	  isInside = insideSecond ;
-	}
-    
-      return isInside ;
- 
+            }
+        else
+            {
+                s = S1;
+                if(localUV != NULL)
+                    _calculateLocalCoordinates(surf, sol1, localUV);
+
+                if(xx) xx->fill(sol1) ;
+
+                theSol = sol1 ;
+                isInside = insideSecond ;
+            }
+
+        return isInside ;
+
 #else
 
-      else if(insideFirst && !insideSecond)
-	{
-	  s = S0;
-	  if(localUV != NULL)
-	    _calculateLocalCoordinates(surf, sol0, localUV);
+        else if(insideFirst && !insideSecond)
+            {
+                s = S0;
+                if(localUV != NULL)
+                    _calculateLocalCoordinates(surf, sol0, localUV);
 
-	  if(xx) xx->fill(sol0) ;
+                if(xx) xx->fill(sol0) ;
 
-	  //        return true;
-	}
-      else if(!insideFirst && insideSecond)
-	{
-	  s = S1;
-	  if(localUV != NULL)
-	    _calculateLocalCoordinates(surf, sol1, localUV);
+                //        return true;
+            }
+        else if(!insideFirst && insideSecond)
+            {
+                s = S1;
+                if(localUV != NULL)
+                    _calculateLocalCoordinates(surf, sol1, localUV);
 
-	  if(xx) xx->fill(sol1) ;
+                if(xx) xx->fill(sol1) ;
 
-	  // return true;
-	}
-      else // both are valid , choose the smaller absolute solution
-	{
-	  if(std::fabs(S0)  < std::fabs(S1))
-	    {
-	      s = S0;
-	      if(localUV != NULL)
-		_calculateLocalCoordinates(surf, sol0, localUV);
+                // return true;
+            }
+        else // both are valid , choose the smaller absolute solution
+            {
+                if(std::fabs(S0)  < std::fabs(S1))
+                    {
+                        s = S0;
+                        if(localUV != NULL)
+                            _calculateLocalCoordinates(surf, sol0, localUV);
 
-	      if(xx) xx->fill(sol0) ;
-	    }
-	  else
-	    {
-	      s = S1;
-	      if(localUV != NULL)
-		_calculateLocalCoordinates(surf, sol1, localUV);
+                        if(xx) xx->fill(sol0) ;
+                    }
+                else
+                    {
+                        s = S1;
+                        if(localUV != NULL)
+                            _calculateLocalCoordinates(surf, sol1, localUV);
 
-	      if(xx) xx->fill(sol1) ;
-	    }
-	}
+                        if(xx) xx->fill(sol1) ;
+                    }
+            }
 
-      return true;
+        return true;
 #endif
 
 
@@ -385,9 +387,9 @@ namespace aidaTT
     {
         // the z position of the plane
         double planePositionZ = surf->origin().z();
-	double helixPositionZ = _referenceParameters.referencePoint().z() + calculateZ0( _referenceParameters ) ;
+        double helixPositionZ = _referenceParameters.referencePoint().z() + calculateZ0(_referenceParameters) ;
 
-        s = ( planePositionZ - helixPositionZ ) / calculateTanLambda(_referenceParameters);
+        s = (planePositionZ - helixPositionZ) / calculateTanLambda(_referenceParameters);
 
         double x = calculateXfromS(s, _referenceParameters);
         double y = calculateYfromS(s, _referenceParameters);
@@ -412,8 +414,8 @@ namespace aidaTT
     void trajectory::_calculateLocalCoordinates(const ISurface* surf, const Vector3D& position, Vector2D* localUV, Vector3D* xx)
     {
         Vector2D local = surf->globalToLocal(position);
-        localUV->_u = local.u();
-        localUV->_v = local.v();
+        localUV->u() = local.u();
+        localUV->v() = local.v();
     }
 
 
@@ -421,16 +423,16 @@ namespace aidaTT
     void trajectory::addMeasurement(const Vector3D& position, const std::vector<double>& precision, const ISurface& surface, void* id)
     {
         /// get reference information
-        Vector2D* referenceUV = new Vector2D();
+        Vector2D referenceUV ;
         double s =  0;
-        double intersects = _calculateIntersectionWithSurface(&surface, s, referenceUV);
+        double intersects = _calculateIntersectionWithSurface(&surface, s, &referenceUV);
 
         /// calculate measurement info
-        Vector2D* measuredUV = new Vector2D(surface.globalToLocal(position));
+        Vector2D measuredUV(surface.globalToLocal(position));
 
         // combining both delivers the actual residuals: measurement MINUS reference
-        const double udiff = measuredUV->u() - referenceUV->u();
-        const double vdiff = measuredUV->v() - referenceUV->v();
+        const double udiff = measuredUV.u() - referenceUV.u();
+        const double vdiff = measuredUV.v() - referenceUV.v();
 
         std::vector<double> residuals(2);
         residuals[0] = udiff;
@@ -446,8 +448,9 @@ namespace aidaTT
             }
         else
             {
-                std::cout << " ERROR: hit at " << position << "  does not intersect with surface : " <<  surface
-                          << "        hit will be ignored ! " << std::endl ;
+                delete measDir ;
+
+                //~ std::cout << " ERROR: hit at " << position << "  does not intersect with surface : " <<  surface  << "        hit will be ignored ! " << std::endl ;
             }
     }
 

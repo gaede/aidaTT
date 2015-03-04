@@ -6,7 +6,7 @@
 #include <cmath>
 #include <ostream>
 
-/** simple helper class to calculate the analytical solutions of intersections
+/** helper classes to calculate the analytical solutions of intersections
 * a helix is a circle in the projection perpendicular to the magnetic field
 *    and a straight line in the the direction of the magnetic field
 *

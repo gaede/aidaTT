@@ -16,25 +16,25 @@
  *      a Bfield given in [T], and
  *      a speed of light given in [m/s]
  */
-//~ 
+//~
 //~ #ifdef AIDATT_USE_DD4HEP
 //~ #include "DD4hep/DD4hepUnits.h"
-//~ 
+//~
 //~ namespace aidaTT
 //~ {
-    //~ using  dd4hep::millimeter;
-    //~ using  dd4hep::centimeter;
-    //~ using  dd4hep::meter;
-//~ 
-    //~ using  dd4hep::megaelectronvolt;
-    //~ using  dd4hep::electronvolt;
-    //~ using  dd4hep::kiloelectronvolt;
-    //~ using  dd4hep::gigaelectronvolt;
-    //~ using  dd4hep::teraelectronvolt;
-    //~ using  dd4hep::petaelectronvolt;
-//~ 
-    //~ //static const double convertBr2P_cm = 0.299792458 * (centimeter / millimeter);
-    //~ //static const double convertBr2P_cm = 1.;//0.299792458 * (centimeter / meter);
+//~ using  dd4hep::millimeter;
+//~ using  dd4hep::centimeter;
+//~ using  dd4hep::meter;
+//~
+//~ using  dd4hep::megaelectronvolt;
+//~ using  dd4hep::electronvolt;
+//~ using  dd4hep::kiloelectronvolt;
+//~ using  dd4hep::gigaelectronvolt;
+//~ using  dd4hep::teraelectronvolt;
+//~ using  dd4hep::petaelectronvolt;
+//~
+//~ //static const double convertBr2P_cm = 0.299792458 * (centimeter / millimeter);
+//~ //static const double convertBr2P_cm = 1.;//0.299792458 * (centimeter / meter);
 //~ }
 //~ #endif // AIDATT_UNITS_HH
 
@@ -43,10 +43,11 @@
 #define AIDATT_UNITS_HH
 namespace aidaTT
 {
-    static const double mm = 1.;
-    static const double cm = 1e1;
-    static const double mum = 1e-3;
-    static const double m = 1e3;
+    static const double mm = .001;
+    static const double cm = .01;
+    static const double mum = .000001;
+    static const double m = 1.;
+    static const double m2cm = 100.;
 }
 
 #endif // AIDATT_USE_DD4HEP

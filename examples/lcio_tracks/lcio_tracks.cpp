@@ -367,7 +367,7 @@ int main(int argc, char** argv)
 		      idDecoder[lcio::ILDCellID0::side] = ((*thit)->getPosition()[2]  >  0  ?   +1 : -1) ;
 		      
 		      // increase the layerid by one:
-		      unsigned layerID = idDecoder[lcio::ILDCellID0::layer] ;
+//		      unsigned layerID = idDecoder[lcio::ILDCellID0::layer] ;
 		      //idDecoder[lcio::ILDCellID0::layer] = layerID + 1 ;
 		      
 		      hitid = idDecoder.lowWord() ;
