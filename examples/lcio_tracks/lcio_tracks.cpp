@@ -219,7 +219,7 @@ int main(int argc, char** argv)
                             double Y2 = testhit3->getPosition()[1] * mm;
                             double Z2 = testhit3->getPosition()[2] * mm;
 
-                            std::cout << " layer " << test_layer << " X " << X2 << " Y " << Y2 << " Z " << Z2 << std::endl ;
+                            //std::cout << " layer " << test_layer << " X " << X2 << " Y " << Y2 << " Z " << Z2 << std::endl ;
 
                             float globpos2[3] = {X2, Y2, Z2};
 
