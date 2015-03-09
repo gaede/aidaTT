@@ -179,13 +179,6 @@ namespace aidaTT
         const bool insideSecond = surf->insideBounds(sol1);
 
 
-        // std::cout << " trajectory::_intersectsWithinZCylinderBounds:  sol0 x = "
-        //        << X0 << " y = " << Y0 << " z = " << Z0 << " s = " << S0 << " isInside " << insideFirst << std::endl ;
-
-        // std::cout << " trajectory::_intersectsWithinZCylinderBounds:  sol1 x = "
-        //        << X1 << " y = " << Y1 << " z = " << Z1 << " s = " << S1 << " isInside " << insideSecond << std::endl ;
-
-
         if((!insideFirst && !insideSecond))   // || (S0 < 0. && S1 < 0.))      //do not  discard negative or no solution
             return false;
 
@@ -449,8 +442,6 @@ namespace aidaTT
         else
             {
                 delete measDir ;
-
-                //~ std::cout << " ERROR: hit at " << position << "  does not intersect with surface : " <<  surface  << "        hit will be ignored ! " << std::endl ;
             }
     }
 
