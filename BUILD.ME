@@ -25,6 +25,11 @@ To include the package in the compilation and thus activate the interface use
 One possible persistency format is given by LCIO.
 To build e.g. the examples that use LCIO specify
 	cmake --DLCIO_DIR=$PATH_TO_LCIO_CONFIG
+
+
+///////*******************************
+cmake  -DGBL_DIR=$ILCSOFT/GBL/HEAD  -DDD4hep_DIR=$ILCSOFT/DD4hep/HEAD --DLCIO_DIR=$ILCSOFT/lcio/HEAD .. 
+//******************************************
   
 [ examples ]
 To build examples: 

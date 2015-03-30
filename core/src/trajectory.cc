@@ -87,29 +87,47 @@ namespace aidaTT
 
 
 
-    const fitResults& trajectory::getFitResults()
-    {
-        return _fittingAlgorithm->getResults();
-    }
+  const fitResults& trajectory::getFitResults()
+  {
+    return _fittingAlgorithm->getResults();
+  }
+  
+  /*
+  // Do we really need that?
+  bool trajectory::intersectWithSurface(const ISurface* surface, Vector3D& intersect)
+  {
+    
+    /// currently three different types of surfaces are available
+    if(surf->isZCylinder())
+      return _intersectsWithinZCylinderBounds(surface, intersect);
+    else if(surf->isZPlane())
+      return _intersectWithinZPlaneBounds(surface, intersect);
+    else if(surf->isZDisk())
+      return _intersectWithinZDiskBounds(surface, intersect);
+    else
+      throw std::invalid_argument("[aidaTT::trajectory::getIntersectionWithSurfaces] Unknown surface type!");
 
 
-
-    bool trajectory::_calculateIntersectionWithSurface(const ISurface* surf, double& s, Vector2D* localUV, Vector3D* xx)
-    {
+  }
+  */
+  
+  
+  bool trajectory::_calculateIntersectionWithSurface(const ISurface* surf, double& s, Vector2D* localUV, Vector3D* xx)
+  {
         /// currently three different types of surfaces are available
-        if(surf->isZCylinder())
-            return _intersectsWithinZCylinderBounds(surf, s, localUV, xx);
-        else if(surf->isZPlane())
-            return _intersectWithinZPlaneBounds(surf, s, localUV, xx);
-        else if(surf->isZDisk())
-            return _intersectWithinZDiskBounds(surf, s, localUV, xx);
-        else
-            throw std::invalid_argument("[aidaTT::trajectory::getIntersectionWithSurfaces] Unknown surface type!");
-    }
-
-
-
-    bool trajectory::_intersectsWithinZCylinderBounds(const ISurface* surf, double& s, Vector2D* localUV, Vector3D* xx)
+    if(surf->isZCylinder())
+      return _intersectsWithinZCylinderBounds(surf, s, localUV, xx);
+    else if(surf->isZPlane())
+      return _intersectWithinZPlaneBounds(surf, s, localUV, xx);
+    else if(surf->isZDisk())
+      return _intersectWithinZDiskBounds(surf, s, localUV, xx);
+    else
+      throw std::invalid_argument("[aidaTT::trajectory::getIntersectionWithSurfaces] Unknown surface type!");
+  }
+  
+  
+  
+  bool trajectory::_intersectsWithinZCylinderBounds(const ISurface* surf, double& s, Vector2D* localUV, Vector3D* xx)
     {
         //// see: L3 internal note 1666 "Helicoidal tracks", J.Alcaraz
 

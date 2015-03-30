@@ -90,9 +90,11 @@ int main(int argc, char** argv)
 
     //*********************************************************************
 
+    char* ofile_name = argv[4] ;
+
     int counter = 0 ;
 
-    TFile *ofile = new TFile("ofile.root", "RECREATE");
+    TFile *ofile = new TFile(ofile_name, "RECREATE");
     //Create tree
     TTree *t1 = new TTree("t1", "t1");
     vector<double> TrackHitResidualsU ;
@@ -111,6 +113,11 @@ int main(int argc, char** argv)
     t1->Branch("pullLCIO_U", &pullLCIO_U);
     vector<double> pullLCIO_V ;
     t1->Branch("pullLCIO_V", &pullLCIO_V);
+    vector<double> TrackHitResidualsU_LCIO ;
+    t1->Branch("TrackHitResidualsU_LCIO", &TrackHitResidualsU_LCIO);
+    vector<double> TrackHitResidualsV_LCIO ;
+    t1->Branch("TrackHitResidualsV_LCIO", &TrackHitResidualsV_LCIO);
+
 
     //*********************************************************************
 
@@ -118,7 +125,7 @@ int main(int argc, char** argv)
     rdr->open(lcioFileName) ;
     LCWriter* wrt = LCFactory::getInstance()->createLCWriter() ;
 
-    if(argc == 4)
+    if(argc > 3)
         {
             std::string outFile = argv[3];
             wrt->open(outFile) ;
@@ -156,6 +163,8 @@ int main(int argc, char** argv)
             VXDlayer.clear();
             pullLCIO_U.clear();
             pullLCIO_V.clear();
+	    TrackHitResidualsU_LCIO.clear();
+            TrackHitResidualsV_LCIO.clear();
 
             LCCollection* trackCollection = evt->getCollection(trackCollectionName) ;
 
@@ -182,10 +191,57 @@ int main(int argc, char** argv)
             std::vector<TrackerHit*> initialHits = initialTrack->getTrackerHits();
 
 
+
+#define compute_start_helix 1
+#if compute_start_helix //----------------------------------------------------------------------------------------------------
+	    aidaTT::trackParameters startHelix ;
+	    
+	    unsigned nHits = initialHits.size() ;
+	    if( nHits > 2 ) {  
+	      //--------- get the start helix from three points
+	      bool backwards = false ;
+	      
+	      lcio::TrackerHit* h1 = ( backwards ?  initialHits[ nHits-1 ] : initialHits[    0    ] ) ;
+	      lcio::TrackerHit* h2 =  initialHits[ (nHits+1) / 2 ] ;
+	      lcio::TrackerHit* h3 = ( backwards ?  initialHits[    0    ] : initialHits[ nHits-1 ] ) ;
+	      
+	      aidaTT::Vector3D x1( h1->getPosition()[0] * mm , h1->getPosition()[1] * mm  , h1->getPosition()[2] * mm ) ;
+	      aidaTT::Vector3D x2( h2->getPosition()[0] * mm , h2->getPosition()[1] * mm  , h2->getPosition()[2] * mm ) ;
+	      aidaTT::Vector3D x3( h3->getPosition()[0] * mm , h3->getPosition()[1] * mm  , h3->getPosition()[2] * mm ) ;
+	      
+	      calculateStartHelix( x1, x2,  x3 , startHelix , backwards ) ;
+	      
+	      moveHelixTo( startHelix, aidaTT::Vector3D()  ) ; // move to origin
+
+	      // --- set some large errors to the covariance matrix
+	      startHelix.covarianceMatrix().Unit() ;
+	      startHelix.covarianceMatrix()( aidaTT::OMEGA, aidaTT::OMEGA ) = 1.e-2 ;
+	      startHelix.covarianceMatrix()( aidaTT::TANL , aidaTT::TANL  ) = 1.e2 ;
+	      startHelix.covarianceMatrix()( aidaTT::PHI0 , aidaTT::PHI0  ) = 1.e2 ;
+	      startHelix.covarianceMatrix()( aidaTT::D0   , aidaTT::D0    ) = 1.e5 ;
+	      startHelix.covarianceMatrix()( aidaTT::Z0   , aidaTT::Z0    ) = 1.e5 ;
+
+	      std::cout << "  start helix from three points : " << startHelix << std::endl ;
+
+	      // use this helix as start for the fit:
+	      iTP = startHelix ;
+	      
+	    }
+#else
+	    // --- set some large errors to the covariance matrix
+	    iTP.covarianceMatrix().Unit() ;
+	    iTP.covarianceMatrix()( aidaTT::OMEGA, aidaTT::OMEGA ) = 1.e-2 ;
+	    iTP.covarianceMatrix()( aidaTT::TANL , aidaTT::TANL  ) = 1.e2 ;
+	    iTP.covarianceMatrix()( aidaTT::PHI0 , aidaTT::PHI0  ) = 1.e2 ;
+	    iTP.covarianceMatrix()( aidaTT::D0   , aidaTT::D0    ) = 1.e5 ;
+	    iTP.covarianceMatrix()( aidaTT::Z0   , aidaTT::Z0    ) = 1.e5 ;
+	    
+#endif //----------------------------------------------------------------------------------------------------------------------
+
             TrackStateImpl* ts;
-
+	    
             bool success;
-
+	    
             aidaTT::trajectory fitTrajectory(iTP, fitter, bfield, propagation, &geom);
             const aidaTT::fitResults* result = &fitTrajectory.getFitResults();
 
@@ -204,6 +260,10 @@ int main(int argc, char** argv)
                             hitid = idDecoder.lowWord() ;
                         }
 		    */
+
+		    if(idDecoder[ lcio::ILDCellID0::subdet] != lcio::ILDDetID::VXD)
+		      continue;
+
                     int test_layer = idDecoder[lcio::ILDCellID0::layer] ;
 
                     const aidaTT::ISurface* surf3 = surfMap[ hitid ] ;
@@ -253,10 +313,6 @@ int main(int argc, char** argv)
                                     if(BitSet32(testhit3->getType())[ UTIL::ILDTrkHitTypeBit::COMPOSITE_SPACEPOINT ])        //it is a composite spacepoint
                                         {
 
-                                            // backup stupid methode
-                                            //double deltaU = 0.007 * dd4hep::mm  ;
-                                            //double deltaV = 0.050 * dd4hep::mm  ;
-
                                             const LCObjectVec rawObjects = testhit3->getRawHits();
 
                                             for(unsigned k = 0; k < rawObjects.size(); k++)
@@ -289,9 +345,13 @@ int main(int argc, char** argv)
                                                     double deltaV = planarhit3->getdV() * mm  ;
 
                                                     //~ std::cout << " AND THE PLANARHIT EXISTS!?!?! dU, dV " << deltaU << ", " << deltaV << std::endl ;
+						    TrackHitResidualsU_LCIO.push_back(resU);
+						    TrackHitResidualsV_LCIO.push_back(resV);
 
-                                                    pullLCIO_U.push_back(resU / deltaU);
-                                                    pullLCIO_V.push_back(resV / deltaV);
+						    if (fabs(resU / deltaU)<1000 && fabs(resV / deltaV) ){
+						      pullLCIO_U.push_back(resU / deltaU);
+						      pullLCIO_V.push_back(resV / deltaV);
+						    }
                                                 }
                                         }
                                 }
@@ -314,8 +374,8 @@ int main(int argc, char** argv)
                             long64 hitid = (*thit)->getCellID0() ;
                             idDecoder.setValue(hitid) ;
 
-                            //if(idDecoder[ lcio::ILDCellID0::subdet] != lcio::ILDDetID::VXD)
-			    //   continue;
+                            if(idDecoder[ lcio::ILDCellID0::subdet] != lcio::ILDDetID::VXD)
+			       continue;
 
 			    /*
                             if(idDecoder[ lcio::ILDCellID0::subdet] == lcio::ILDDetID::VXD ||lcio::ILDCellID0::subdet] == lcio::ILDDetID::SIT )
@@ -430,14 +490,17 @@ int main(int argc, char** argv)
                                     double deltaU = planarhit2->getdU() * mm  ;
                                     double deltaV = planarhit2->getdV() * mm  ;
 
-                                    pullU.push_back(resU / deltaU);
-                                    pullV.push_back(resV / deltaV);
+				    if (fabs(resU / deltaU)<1000 && fabs(resV / deltaV) ){
+				      pullU.push_back(resU / deltaU);
+				      pullV.push_back(resV / deltaV);
+				    }
 
-                                    //std::cout << " res in U = " << resU << " res in V = " << resV << std::endl ;
+                                    //std::cout << " Track's U " << tU << " hit's U " << U << " res in U = " << resU << " Track's V " << tV << " hit's V " << V <<  " res in V = " << resV << std::endl ;
 
-                                    TrackHitResidualsU.push_back(resU);
-                                    TrackHitResidualsV.push_back(resV);
-
+				    if (fabs(resU)<1000 && fabs(resV)<1000){
+				      TrackHitResidualsU.push_back(resU);
+				      TrackHitResidualsV.push_back(resV);
+				    }
                                     VXDlayer.push_back(layerVXD);
 
                                     counter++;
