@@ -4,8 +4,7 @@
 #include <vector>
 
 #include <ostream>
-
-#include <Eigen/Core>
+#include <array>
 
 #include "Vector5.hh"
 #include "Vector3D.hh"
@@ -13,19 +12,23 @@
 namespace aidaTT
 {
 
-  typedef Eigen::Matrix<double, 5, 1 > Vector5d ;
-  typedef Eigen::Matrix<double, 5, 5, Eigen::RowMajor > Matrix5x5d;
+  // typedef Eigen::Matrix<double, 5, 1 > Vector5d ;
+  // typedef Eigen::Matrix<double, 5, 5, Eigen::RowMajor > Matrix5x5d;
 
   /** this is the main working horse class for a 5x5 matrix
-   *  Implemented using Eigen
+   *  Implemented using an std::array.
+   * 
+   *  @author F.Gaede, DESY
+   *  @date Sep 2016
    */
+
   class fiveByFiveMatrix {
 
     friend class IPropagation;
 
   public:
     /** the default construction, it initializes all entries to zero **/
-    fiveByFiveMatrix(){ _m.Zero() ; }
+    fiveByFiveMatrix() : _m{{ {{0.,0.,0.,0.,0.}},  {{0.,0.,0.,0.,0.}} , {{0.,0.,0.,0.,0.}} , {{0.,0.,0.,0.,0.}} , {{0.,0.,0.,0.,0.}} }} {}
 
     /** copy construction **/
     fiveByFiveMatrix(const fiveByFiveMatrix& o) : _m(o._m) {} 
@@ -33,7 +36,10 @@ namespace aidaTT
     /** the construction with a vector, this is ROW wise;
      * the sixth element of the vector is the first in the second row!
      **/
-    fiveByFiveMatrix(const std::vector<double>& o) : _m( &o[0] ) {}
+    fiveByFiveMatrix(const std::vector<double>& o)  {
+      
+      std::memcpy( &_m[0][0] , &o[0] , 25*sizeof(double) ) ;
+    }
 
     /** the destructor **/
     ~fiveByFiveMatrix() {}
@@ -46,48 +52,55 @@ namespace aidaTT
 
     /** direct read access to the individual matrix elements by index**/
     double operator()(unsigned int r, unsigned int c) const{
-      return _m(r,c) ;
+      return _m[r][c] ;
     }
 
     /** direct write access to the individual matrix elements by index**/
     double& operator()(unsigned int r, unsigned int c){
-      return _m(r,c) ;
+      return _m[r][c] ;
     }
-
+    
     /** define matrix-matrix multipliation **/
     fiveByFiveMatrix operator*(const fiveByFiveMatrix& o){
-      return fiveByFiveMatrix( _m * o._m  ) ; 
+      fiveByFiveMatrix p ;
+      for( unsigned i=0 ; i<5 ; ++i )
+	for( unsigned j=0 ; j<5 ; ++j )
+	  for( unsigned k=0 ; k<5 ; ++k )
+	    p._m[i][j] += _m[i][k] * o._m[k][i] ;
+      // unroll this loop ?
+      return p ;
     }
-
+    
     /** define matrix-vector multiplication **/
     Vector5 operator*(const Vector5& o) const {
-      Vector5d v( &o._v[0] ) ;
-      Vector5d vp =  _m * v ;
-      return Vector5( vp[0],vp[1],vp[2],vp[3],vp[4]  ) ;
+      Vector5 v ;
+      for( unsigned j=0 ; j<5 ; ++j )
+	for( unsigned k=0 ; k<5 ; ++k )
+	  v(j) += _m[j][k] * o(k) ;
+      // unroll this loop ?
+      return v ;
     }
     
     /** make a unit matrix out of the given matrix **/
     inline void Unit(){
-      _m.Identity() ;
-    };
-
+      _m = {{ {{1.,0.,0.,0.,0.}},  {{0.,1.,0.,0.,0.}} , {{0.,0.,1.,0.,0.}} , {{0.,0.,0.,1.,0.}} , {{0.,0.,0.,0.,1.}} }} ;
+    }
+      
     /** transpose the matrix (in place) */
     inline void Transpose(){
-      _m.transposeInPlace() ;
-    };
-
+      for( unsigned i=0 ; i<5 ; ++i )
+	for( unsigned j=i+1 ; j<5 ; ++j )
+	  std::swap(  _m[i][j] , _m[j][i]   ) ;
+    }
+    
     /** get array to construct other matrix representations */
     double* array() const{
-      return (double*) _m.data() ;
+      return (double*) &_m[0][0];
     }
-
-
-  protected:
-    // conversion c'tor from Eigen's matrix 
-    fiveByFiveMatrix(const Matrix5x5d& o) : _m( o ) {}
-
+    
+        
   private:
-    Matrix5x5d _m ;
+    std::array<std::array<double, 5>, 5> _m ;
   };
 
 
