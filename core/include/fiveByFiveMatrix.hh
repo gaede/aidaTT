@@ -13,6 +13,7 @@
 namespace aidaTT
 {
 
+  typedef Eigen::Matrix<double, 5, 1 > Vector5d ;
   typedef Eigen::Matrix<double, 5, 5, Eigen::RowMajor > Matrix5x5d;
 
   /** this is the main working horse class for a 5x5 matrix
@@ -60,7 +61,9 @@ namespace aidaTT
 
     /** define matrix-vector multiplication **/
     Vector5 operator*(const Vector5& o) const {
-      return Vector5( _m * o._v ) ;
+      Vector5d v( &o._v[0] ) ;
+      Vector5d vp =  _m * v ;
+      return Vector5( vp[0],vp[1],vp[2],vp[3],vp[4]  ) ;
     }
     
     /** make a unit matrix out of the given matrix **/

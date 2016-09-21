@@ -3,18 +3,19 @@
 
 #include <ostream>
 #include <vector>
+#include <array>
 
-#include <Eigen/Core>
 
 namespace aidaTT
 {
 
-  typedef Eigen::Matrix<double, 5, 1 > Vector5d;
 
-
-  /** This is a simple abstraction of a five-element vector that will work with the matrix class
-   *  implemented using Eigen
-   *
+  /** This is a simple abstraction of a five-element vector 
+   *  based on an array.  
+   *  Considerably faster than the implementation using an Eigen matrix...
+   * 
+   *  @author F.Gaede, DESY
+   *  @date Sep 2016
    */
   class Vector5 {
 
@@ -22,23 +23,27 @@ namespace aidaTT
 
   public:
     /** the default construction, it initializes all entries to zero **/
-    Vector5(){  _v.Zero() ; }
+    Vector5() : _v{{0.,0.,0.,0.,0.}} {}  
 
     /** copy constructor **/
     Vector5(const Vector5& o) : _v( o._v ) {}
 
     /** the construction with a vector
      **/
-    Vector5(const std::vector<double>& o) : _v( &o[0]) {}
+    Vector5(const std::vector<double>& o) {
+      std::memcpy( &_v[0] , &o[0] , 5*sizeof(double) ) ;
+    }
 
     /** the construction with an array
      **/
-    Vector5(const double* o) : _v(o) {}
+    Vector5(const double* o) {
+      std::memcpy( &_v[0] , o , 5*sizeof(double) ) ;
+    }
 
     /** the construction from five doubles
      **/
-    Vector5(double v0, double v1, double v2, double v3, double v4){
-      _v << v0,v1,v2,v3,v4 ;
+    Vector5(double v0, double v1, double v2, double v3, double v4) :
+      _v { { v0,v1,v2,v3,v4 } } {
     }
 
     /** the destructor **/
@@ -54,34 +59,36 @@ namespace aidaTT
 
     // addition operator  - in place !?
     Vector5& operator+=(const Vector5& o){ 
-      _v += o._v ;
+      _v[0] += o._v[0] ;
+      _v[1] += o._v[1] ;
+      _v[2] += o._v[2] ;
+      _v[3] += o._v[3] ;
+      _v[4] += o._v[4] ;
       return *this ;
     }
 
     // addition w/ copy
     Vector5 operator+(const Vector5& o) const{
       Vector5 newVec( *this ) ;
-      return  newVec + o ;
+      newVec += o ;
+      return  newVec ;
     } 
 
 
     /** Direct read access to the individual elements by index**/
     double operator()(unsigned int i) const{
-      return _v(i) ;
+      return _v[i] ;
     }
 
     /** direct write access to the individual elements by index**/
     double& operator()(unsigned int i){
-      return _v(i) ;
+      return _v[i] ;
     }
 
   protected:
 
-    // conversion c'tor from Eigen's vector 
-    Vector5(const Vector5d & o) : _v( o ) {}
-
   private:
-    Vector5d _v ;
+    std::array<double,5> _v ;
   };
 
 
